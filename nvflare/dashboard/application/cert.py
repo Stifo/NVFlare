@@ -71,6 +71,12 @@ def generate_keys():
 
 
 def x509_name(cn_name, org_name=None, role=None):
+    if len(cn_name) > 64:
+        # There's a limit on the NameAttribute length
+        # see cryptoography v43.0.x: https://github.com/pyca/cryptography/blob/a7733878281ca261c4ada04022fc706ba5de9d8b/src/cryptography/x509/name.py#L65
+        # if a Server (DNS name) is longer than 64 characters, an error occurs when trying to download Overseer and Server startup kits from the NVFlare Dashboard
+        # quick workaround: truncating to the maximum limit
+        cn_name = cn_name[:64]
     name = [x509.NameAttribute(NameOID.COMMON_NAME, cn_name)]
     if org_name is not None:
         name.append(x509.NameAttribute(NameOID.ORGANIZATION_NAME, org_name))
